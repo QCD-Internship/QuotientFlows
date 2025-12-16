@@ -16,9 +16,7 @@ import torch
 from torch import tensor
 from tqdm import trange
 
-# ---------------------------
 # Global settings
-# ---------------------------
 
 L = 8                  # lattice linear size (LxL)
 beta = 2.2             # gauge coupling
@@ -36,10 +34,8 @@ device = torch.device("mps" if torch.backends.mps.is_available()
 torch.manual_seed(seed)
 np.random.seed(seed)
 
-# ---------------------------
 # SU(2) helper routines
 # Representation: 4-vector (a0, a1, a2, a3) with ||a|| = 1.
-# ---------------------------
 
 def su2_quat_normalize(q):
     """Normalize 4-vector to unit length."""
@@ -96,9 +92,7 @@ def su2_quat_inv(a):
     av = a[..., 1:]
     return torch.cat([a0, -av], dim=-1)
 
-# ---------------------------
 # Lattice geometry
-# ---------------------------
 
 def init_lattice(L, device):
     """
@@ -157,10 +151,8 @@ def polyakov_loop_abs(U):
     a0 = P[..., 0]
     # Map to "magnitude" in [0,1].
     return a0.abs().mean()
-
-# ---------------------------
+  
 # Metropolis updates
-# ---------------------------
 
 def metropolis_step(U, beta, eps, device):
     """
@@ -181,9 +173,7 @@ def metropolis_step(U, beta, eps, device):
     else:
         return U, False
 
-# ---------------------------
 # Canonicalisation (translation quotient)
-# ---------------------------
 
 def canonicalise_translation(U):
     """
@@ -201,10 +191,8 @@ def canonicalise_translation(U):
     U_can = torch.clone(U)
     U_can = torch.roll(U_can, shifts=(-x0, -y0), dims=(1, 2))
     return U_can
-
-# ---------------------------
+  
 # Main routine
-# ---------------------------
 
 def main():
     print(f"[Device] Using {device}")
