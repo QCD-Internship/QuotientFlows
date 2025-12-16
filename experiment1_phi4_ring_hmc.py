@@ -3,9 +3,7 @@ import math
 import numpy as np
 import torch
 
-# ============================================================
 # Device selection: CUDA -> MPS (Apple Metal) -> CPU
-# ============================================================
 if torch.cuda.is_available():
     device = torch.device("cuda")
     print("Using CUDA")
@@ -53,10 +51,7 @@ class Phi4Ring1D:
         grad_quartic = self.lam * phi ** 3
         return self.beta * (grad_kin + grad_mass + grad_quartic)
 
-
-# ============================================================
 # HMC sampler
-# ============================================================
 
 def hmc_sample(
     model: Phi4Ring1D,
@@ -140,10 +135,7 @@ def hmc_sample(
     print(f"[HMC] Generated {samples.shape[0]} samples of length {model.L}")
     return samples
 
-
-# ============================================================
 # Canonicalisation utilities
-# ============================================================
 
 def canonicalise_Z2(phi: torch.Tensor) -> torch.Tensor:
     """Canonicalise under global Z2: if M < 0 flip φ → −φ."""
@@ -171,10 +163,7 @@ def canonicalise_Z2_translations(phi: torch.Tensor) -> torch.Tensor:
     phi_can = torch.roll(phi_can, shifts=shift, dims=0)
     return phi_can
 
-
-# ============================================================
 # Observables
-# ============================================================
 
 def compute_observables(samples: torch.Tensor):
     """
@@ -197,9 +186,7 @@ def compute_observables(samples: torch.Tensor):
     return obs
 
 
-# ============================================================
 # Main driver
-# ============================================================
 
 def main():
     # Model parameters
