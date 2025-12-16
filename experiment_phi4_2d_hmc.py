@@ -3,9 +3,7 @@ import math
 import numpy as np
 import torch
 
-# ============================================================
 # Device selection
-# ============================================================
 if torch.cuda.is_available():
     device = torch.device("cuda")
     print("[Device] Using CUDA")
@@ -67,10 +65,7 @@ class Phi4Lattice2D:
         grad_quartic = self.lam * phi ** 3
         return self.beta * (grad_kin + grad_mass + grad_quartic)
 
-
-# ============================================================
 # HMC sampler
-# ============================================================
 
 def hmc_sample(
     model: Phi4Lattice2D,
@@ -149,10 +144,7 @@ def hmc_sample(
     print(f"[HMC] Generated {samples.shape[0]} samples of size {model.L}x{model.L}")
     return samples
 
-
-# ============================================================
 # Canonicalisation
-# ============================================================
 
 def canonicalise_Z2(phi: torch.Tensor) -> torch.Tensor:
     """
@@ -186,10 +178,7 @@ def canonicalise_Z2_translations(phi: torch.Tensor) -> torch.Tensor:
     phi_can = torch.roll(phi_can, shifts=(-i_max, -j_max), dims=(0, 1))
     return phi_can
 
-
-# ============================================================
 # Observables
-# ============================================================
 
 def compute_observables(samples: torch.Tensor):
     """
@@ -214,14 +203,11 @@ def compute_observables(samples: torch.Tensor):
     }
     return obs
 
-
-# ============================================================
 # Main driver
-# ============================================================
 
 def main():
     # Lattice / action parameters
-    L = 16               # you can bump to 32 later
+    L = 16               # can bump up to 32 later
     m2 = -0.5
     lam = 3.0
     beta = 1.0
