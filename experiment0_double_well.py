@@ -5,11 +5,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
-from scipy.stats import wasserstein_distance  # SciPy W1
-
-# ============================================================
+from scipy.stats import wasserstein_distance 
 # Device selection: CUDA -> MPS (Apple Metal) -> CPU
-# ============================================================
 if torch.cuda.is_available():
     device = torch.device("cuda")
     print("Using CUDA")
@@ -19,10 +16,7 @@ elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
 else:
     device = torch.device("cpu")
     print("Using CPU")
-
-# ============================================================
 # Target: 1D Double-Well as Mixture of Two Gaussians
-# ============================================================
 LOG_SQRT_2PI = 0.5 * math.log(2.0 * math.pi)
 
 def log_normal(x, mean, log_std):
@@ -63,18 +57,14 @@ def sample_double_well(n, m=2.0, sigma=0.5, torch_device=None):
         base = torch.randn(n, device=torch_device) * sigma + m          # N(m, sigma^2)
         x = signs * base
     return x
-
-# ============================================================
 # Base distribution for flows: standard Normal
-# ============================================================
 base_dist = torch.distributions.Normal(
     torch.tensor(0.0, device=device),
     torch.tensor(1.0, device=device),
 )
 
-# ============================================================
 # Residual Tanh Layers (1D)
-# ============================================================
+
 class ResidualTanhLayer1D(nn.Module):
     """
     1D residual layer:
@@ -118,10 +108,8 @@ class ResidualTanhOddLayer1D(nn.Module):
         dydx = torch.clamp(dydx, min=1e-6)
         log_abs_det = torch.log(torch.abs(dydx))
         return y, log_abs_det
-
-# ============================================================
 # Vanilla 1D Flow: z -> x (no symmetry constraints)
-# ============================================================
+
 class VanillaFlow1D(nn.Module):
     def __init__(self, num_layers=8):
         super().__init__()
@@ -157,9 +145,7 @@ class VanillaFlow1D(nn.Module):
         log_q = base_dist.log_prob(z) - log_det
         return x, log_q
 
-# ============================================================
 # Equivariant Z2 Flow: odd map z -> x, x(-z) = -x(z)
-# ============================================================
 class EquivariantFlow1D(nn.Module):
     def __init__(self, num_layers=8):
         super().__init__()
@@ -188,9 +174,7 @@ class EquivariantFlow1D(nn.Module):
         log_q = base_dist.log_prob(z) - log_det
         return x, log_q
 
-# ============================================================
 # Quotient Flow: Flow on |x| >= 0, then random sign lifting
-# ============================================================
 class QuotientFlow1D(nn.Module):
     def __init__(self, num_layers=8):
         super().__init__()
@@ -247,10 +231,7 @@ class QuotientFlow1D(nn.Module):
         # lifted density on X:
         log_q_x = log_q_y - math.log(2.0)
         return x, log_q_x
-
-# ============================================================
 # Training utilities
-# ============================================================
 def train_flow_reverse_kl(
     model,
     name,
@@ -331,9 +312,7 @@ def train_flow_reverse_kl(
 
     return model, history
 
-# ============================================================
 # Main experiment
-# ============================================================
 def main():
     torch.manual_seed(1234)
     np.random.seed(1234)
@@ -397,9 +376,8 @@ def main():
     print(f"Equivariant NF: {w_e:.4f}")
     print(f"Quotient NF   : {w_q:.4f}")
 
-    # --------------------------------------------------------
     # Plot histograms (target vs final models)
-    # --------------------------------------------------------
+
     fig, axes = plt.subplots(2, 2, figsize=(10, 8), sharex=True, sharey=True)
     bins = 100
 
@@ -430,9 +408,8 @@ def main():
     plt.savefig("experiment0_double_well_histograms.png", dpi=200)
     print("Saved histogram plot to experiment0_double_well_histograms.png")
 
-    # --------------------------------------------------------
     # Plot training curves: Wasserstein vs epoch
-    # --------------------------------------------------------
+
     plt.figure(figsize=(8, 6))
     if len(hist_v["eval_epoch"]) > 0:
         plt.plot(hist_v["eval_epoch"], hist_v["wass"], label="Vanilla NF")
