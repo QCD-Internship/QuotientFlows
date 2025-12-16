@@ -353,7 +353,6 @@ def main():
 
     # Save results
     out_file = fname.replace(".npz", "_flows_results.npz")
-    # For histograms: store |P| samples if you like; here just store NLL and scalar observables
     np.savez(
         out_file,
         nll_X=nll_hist_X,
