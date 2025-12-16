@@ -7,9 +7,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from math import pi
 from tqdm import trange
 
-# -------------------------------------------------------
 # Device
-# -------------------------------------------------------
 
 def get_device():
     if torch.backends.mps.is_available():
@@ -21,9 +19,7 @@ def get_device():
     print("[Device] Using CPU")
     return torch.device("cpu")
 
-# -------------------------------------------------------
 # U(1) observables (same as in HMC code)
-# -------------------------------------------------------
 
 def angle_wrap(theta):
     return (theta + pi) % (2 * pi) - pi
@@ -79,9 +75,7 @@ def measure_observables(theta_batch, beta):
     return E_mean, E_err, P_mean, P_err
 
 
-# -------------------------------------------------------
 # RealNVP flow
-# -------------------------------------------------------
 
 class CouplingNet(nn.Module):
     def __init__(self, in_dim, hidden_dim, out_dim):
@@ -208,9 +202,7 @@ class RealNVP(nn.Module):
         return x
 
 
-# -------------------------------------------------------
 # Main
-# -------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser()
@@ -230,9 +222,7 @@ def main():
 
     device = get_device()
 
-    # ---------------------------------------------------
     # Load data
-    # ---------------------------------------------------
     if args.file is None:
         # default file name for L=16,beta=2.0
         fname = "u1_2d_L16_beta2.00_gaugequotient.npz"
@@ -257,18 +247,15 @@ def main():
     dataset_can = TensorDataset(X_can_t)
     loader_can = DataLoader(dataset_can, batch_size=args.batch_size, shuffle=True)
 
-    # ---------------------------------------------------
     # Build flows
-    # ---------------------------------------------------
     flow_X = RealNVP(dim=D, n_coupling_layers=args.n_coupling, hidden_dim=args.hidden_dim).to(device)
     flow_Q = RealNVP(dim=D, n_coupling_layers=args.n_coupling, hidden_dim=args.hidden_dim).to(device)
 
     opt_X = torch.optim.Adam(flow_X.parameters(), lr=args.lr)
     opt_Q = torch.optim.Adam(flow_Q.parameters(), lr=args.lr)
 
-    # ---------------------------------------------------
+
     # Training loops
-    # ---------------------------------------------------
     nll_hist_X = []
     nll_hist_Q = []
 
@@ -317,9 +304,7 @@ def main():
     nll_hist_X = np.array(nll_hist_X, dtype=np.float32)
     nll_hist_Q = np.array(nll_hist_Q, dtype=np.float32)
 
-    # ---------------------------------------------------
     # Evaluate observables from flows (with lifting)
-    # ---------------------------------------------------
     def sample_and_measure(flow, is_quotient=False):
         flow.eval()
         with torch.no_grad():
@@ -366,9 +351,7 @@ def main():
     print(f"    <E_plaquette> = {Ep_Q:+.6f} ± {dEp_Q:.6f}")
     print(f"    <|P|>          = {P_Q:+.6f} ± {dP_Q:.6f}")
 
-    # ---------------------------------------------------
     # Save results
-    # ---------------------------------------------------
     out_file = fname.replace(".npz", "_flows_results.npz")
     # For histograms: store |P| samples if you like; here just store NLL and scalar observables
     np.savez(
