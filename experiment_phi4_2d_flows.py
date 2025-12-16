@@ -7,9 +7,7 @@ import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
 
-# ============================================================
 # Device
-# ============================================================
 
 def get_device():
     if torch.cuda.is_available():
@@ -26,9 +24,7 @@ def get_device():
 
 DEVICE = get_device()
 
-# ============================================================
 # RealNVP on R^D
-# ============================================================
 
 class MLPConditioner(nn.Module):
     def __init__(self, dim, hidden_dim=256):
@@ -112,10 +108,7 @@ class RealNVPFlow(nn.Module):
         x, _ = self.z_to_x(z)
         return x
 
-
-# ============================================================
 # Training helpers
-# ============================================================
 
 def train_flow(
     x_data,
@@ -191,10 +184,7 @@ def compute_observables(phi_np: np.ndarray):
     M_abs = M.abs().numpy()
     return obs, M_abs
 
-
-# ============================================================
 # Main experiment
-# ============================================================
 
 def main():
     # Match HMC script
@@ -232,9 +222,7 @@ def main():
     n_couplings = 8
     hidden_dim = 256
 
-    # ------------------------------
     # Flow on full X
-    # ------------------------------
     flow_X, nll_X = train_flow(
         phi_raw, dim,
         n_epochs=n_epochs,
@@ -245,9 +233,7 @@ def main():
         label="X (raw)",
     )
 
-    # ------------------------------
     # Flow on X/Z2
-    # ------------------------------
     flow_Z2, nll_Z2 = train_flow(
         phi_Z2, dim,
         n_epochs=n_epochs,
@@ -258,9 +244,7 @@ def main():
         label="X/Z2",
     )
 
-    # ------------------------------
     # Flow on X/(Z2×Λ)
-    # ------------------------------
     flow_Z2T, nll_Z2T = train_flow(
         phi_Z2T, dim,
         n_epochs=n_epochs,
@@ -271,9 +255,7 @@ def main():
         label="X/(Z2×Λ)",
     )
 
-    # ------------------------------------------------
     # Sample from each flow and lift to full X
-    # ------------------------------------------------
     n_eval = 2000
 
     # 1) Flow on X: already full space
@@ -305,9 +287,7 @@ def main():
 
     phi_nf_Z2T = np.stack(phi_nf_Z2T_list, axis=0)
 
-    # ------------------------------------------------
     # Observables for NF samples
-    # ------------------------------------------------
     obs_X_nf, M_abs_nf_X = compute_observables(phi_nf_X)
     obs_Z2_nf, M_abs_nf_Z2 = compute_observables(phi_nf_Z2)
     obs_Z2T_nf, M_abs_nf_Z2T = compute_observables(phi_nf_Z2T)
