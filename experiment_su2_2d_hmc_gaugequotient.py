@@ -23,9 +23,7 @@ import torch
 from tqdm import trange
 
 
-# ------------------------------
 # Device selection
-# ------------------------------
 def get_device():
     if torch.backends.mps.is_available():
         return torch.device("mps")
@@ -38,9 +36,7 @@ device = get_device()
 print(f"[Device] Using {device}")
 
 
-# ------------------------------
 # SU(2) quaternion utilities
-# ------------------------------
 def quat_normalize(q: torch.Tensor) -> torch.Tensor:
     """Normalize quaternions to unit norm along last dim."""
     norm = torch.linalg.norm(q, dim=-1, keepdim=True)
@@ -92,9 +88,7 @@ def su2_random_quat(eps: float, shape, device):
     return quat_normalize(q)
 
 
-# ------------------------------
 # Lattice utilities
-# ------------------------------
 def init_identity_config(L: int, device):
     """
     Identity SU(2) config: all links = 1 (quaternion (1,0,0,0)).
@@ -201,9 +195,7 @@ def metropolis_global_step(U: torch.Tensor, beta: float, eps: float):
         return U, False, S_old
 
 
-# ------------------------------
 # Gauge fixing (tree gauge)
-# ------------------------------
 def gauge_fix_tree(U: torch.Tensor) -> torch.Tensor:
     """
     Simple axial / tree gauge:
@@ -261,9 +253,7 @@ def gauge_fix_tree(U: torch.Tensor) -> torch.Tensor:
     return U_gf
 
 
-# ------------------------------
 # Main driver
-# ------------------------------
 def main():
     L = 16
     beta = 2.20
