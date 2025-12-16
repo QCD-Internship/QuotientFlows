@@ -19,9 +19,8 @@ import torch.nn as nn
 from torch.nn import functional as F
 from tqdm import trange
 
-# ---------------------------
 # Settings
-# ---------------------------
+
 
 in_file = "su2_2d_L8_beta2.20.npz"   # adjust if you changed L or beta
 out_file = "su2_2d_L8_beta2.20_flows_results.npz"
@@ -33,9 +32,7 @@ device = torch.device("mps" if torch.backends.mps.is_available()
 torch.manual_seed(1234)
 np.random.seed(1234)
 
-# ---------------------------
 # SU(2) helpers (same as in HMC file, but in torch)
-# ---------------------------
 
 def su2_quat_normalize(q):
     return q / q.norm(dim=-1, keepdim=True)
@@ -77,10 +74,7 @@ def polyakov_loop_abs(U):
     a0 = P[..., 0]
     return a0.abs().mean()
 
-
-# ---------------------------
 # RealNVP components
-# ---------------------------
 
 class AffineCoupling(nn.Module):
     def __init__(self, dim, hidden_dim):
@@ -173,10 +167,7 @@ class RealNVP(nn.Module):
         x, _ = self.f(z)
         return x
 
-
-# ---------------------------
 # Training helpers
-# ---------------------------
 
 def train_flow(data, dim, n_epochs=200, batch_size=256, lr=1e-3, label="X"):
     data = torch.from_numpy(data).float().to(device)
@@ -252,10 +243,7 @@ def measure_observables(U):
         "P_all": P,
     }
 
-
-# ---------------------------
 # Main
-# ---------------------------
 
 def main():
     print(f"[Device] Using {device}")
