@@ -7,9 +7,8 @@ import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
 
-# ============================================================
 # Device
-# ============================================================
+
 
 def get_device():
     if torch.cuda.is_available():
@@ -26,9 +25,9 @@ def get_device():
 
 DEVICE = get_device()
 
-# ============================================================
+
 # RealNVP components for R^L
-# ============================================================
+
 
 class MLPConditioner(nn.Module):
     """Simple fully-connected conditioner: R^dim -> R^{2 dim}."""
@@ -128,9 +127,7 @@ class RealNVPFlow1D(nn.Module):
         return x
 
 
-# ============================================================
 # Training utilities
-# ============================================================
 
 def train_flow(x_data, dim, n_epochs=200, batch_size=128, lr=1e-3,
                n_couplings=8, hidden_dim=128, label=""):
@@ -198,10 +195,7 @@ def compute_observables(phi_np: np.ndarray):
     M_abs = M.abs().numpy()
     return obs, M_abs
 
-
-# ============================================================
 # Main experiment
-# ============================================================
 
 def main():
     # Match the HMC script parameters / filenames
@@ -239,9 +233,8 @@ def main():
     n_couplings = 8
     hidden_dim = 128
 
-    # ------------------------------
     # Baseline: flow on full X
-    # ------------------------------
+
     flow_X, nll_X = train_flow(
         phi_raw, dim,
         n_epochs=n_epochs,
@@ -252,9 +245,8 @@ def main():
         label="X (raw)",
     )
 
-    # ------------------------------
     # Quotient: flow on X/Z2
-    # ------------------------------
+
     flow_Z2, nll_Z2 = train_flow(
         phi_Z2, dim,
         n_epochs=n_epochs,
@@ -264,10 +256,7 @@ def main():
         hidden_dim=hidden_dim,
         label="X/Z2",
     )
-
-    # ------------------------------
     # Quotient: flow on X/(Z2×C_L)
-    # ------------------------------
     flow_Z2C, nll_Z2C = train_flow(
         phi_Z2C, dim,
         n_epochs=n_epochs,
@@ -278,9 +267,7 @@ def main():
         label="X/(Z2×C_L)",
     )
 
-    # ------------------------------------------------
     # Draw samples from each flow and lift to full X
-    # ------------------------------------------------
     n_eval = 2000
 
     # Baseline flow on X already lives in X: no lifting
@@ -306,9 +293,7 @@ def main():
         phi_Z2C_full_list.append(cfg2.numpy())
     phi_Z2C_full = np.stack(phi_Z2C_full_list, axis=0)
 
-    # ------------------------------------------------
     # Observables for NF ensembles
-    # ------------------------------------------------
     obs_X_nf, M_abs_nf_X = compute_observables(phi_X_nf)
     obs_Z2_nf, M_abs_nf_Z2 = compute_observables(phi_Z2_full)
     obs_Z2C_nf, M_abs_nf_Z2C = compute_observables(phi_Z2C_full)
@@ -324,9 +309,7 @@ def main():
     for k, v in obs_Z2C_nf.items():
         print(f"    {k:8s} = {v:+.6f}")
 
-    # ------------------------------------------------
     # Quick inline NLL plot + save arrays for plotting script
-    # ------------------------------------------------
     epochs = np.arange(1, n_epochs + 1)
     plt.figure(figsize=(6, 4))
     plt.plot(epochs, nll_X, label="NF on X", lw=2)
