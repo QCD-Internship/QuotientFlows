@@ -6,9 +6,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-# ============================================================
 # Device
-# ============================================================
 
 def get_device():
     if torch.cuda.is_available():
@@ -24,9 +22,7 @@ def get_device():
 DEVICE = get_device()
 
 
-# ============================================================
 # RealNVP flow on R^D
-# ============================================================
 
 class MLPConditioner(nn.Module):
     def __init__(self, dim, hidden_dim=512):
@@ -112,10 +108,7 @@ class RealNVPFlow(nn.Module):
         x, _ = self.z_to_x(z)
         return x
 
-
-# ============================================================
 # Helpers
-# ============================================================
 
 def wrap_angles_np(theta: np.ndarray) -> np.ndarray:
     """
@@ -215,10 +208,7 @@ def compute_observables(theta_flat: np.ndarray, L: int):
     }
     return obs, P_abs_arr
 
-
-# ============================================================
 # Main experiment: flows on X and X/Λ (Fourier slice)
-# ============================================================
 
 def main():
     L = 16
