@@ -21,9 +21,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from tqdm import trange
 
 
-# ------------------------------
 # Device
-# ------------------------------
 def get_device():
     if torch.backends.mps.is_available():
         return torch.device("mps")
@@ -36,9 +34,7 @@ device = get_device()
 print(f"[Device] Using {device}")
 
 
-# ------------------------------
 # SU(2) quaternion utilities (same as in HMC file)
-# ------------------------------
 def quat_normalize(q: torch.Tensor) -> torch.Tensor:
     norm = torch.linalg.norm(q, dim=-1, keepdim=True)
     return q / norm.clamp_min(1e-8)
@@ -135,9 +131,7 @@ def random_gauge_transform(U: torch.Tensor):
     return U_new
 
 
-# ------------------------------
 # RealNVP components
-# ------------------------------
 class AffineCoupling(nn.Module):
     def __init__(self, dim, hidden_dim):
         super().__init__()
@@ -247,9 +241,7 @@ class RealNVP(nn.Module):
         return x
 
 
-# ------------------------------
 # Helper: batched sampling on chosen device
-# ------------------------------
 def sample_flow_in_batches(flow, n_samples, batch_size, device):
     """
     Sample from a flow in small batches to avoid huge allocations.
@@ -265,13 +257,9 @@ def sample_flow_in_batches(flow, n_samples, batch_size, device):
     return torch.cat(samples, dim=0)
 
 
-# ------------------------------
 # Main training + sampling
-# ------------------------------
 def main():
-    # --------------------------
     # Load data
-    # --------------------------
     L = 16
     beta = 2.20
     data_fname = f"su2_2d_L{L}_beta{beta:.2f}_gaugequotient.npz"
@@ -294,9 +282,7 @@ def main():
     loader_raw = DataLoader(dataset_raw, batch_size=batch_size, shuffle=True, drop_last=True)
     loader_can = DataLoader(dataset_can, batch_size=batch_size, shuffle=True, drop_last=True)
 
-    # --------------------------
     # Define flows
-    # --------------------------
     flow_X = RealNVP(D, hidden_dim=512, n_coupling_layers=8).to(device)
     flow_XG = RealNVP(D, hidden_dim=512, n_coupling_layers=8).to(device)
 
@@ -308,9 +294,7 @@ def main():
     nll_hist_X = []
     nll_hist_XG = []
 
-    # --------------------------
     # Train flow on X
-    # --------------------------
     print("=== 2D SU(2) gauge (gauge quotient): Flows on X and X/G_gauge ===")
 
     for epoch in trange(1, n_epochs + 1, desc="[Train X]"):
@@ -335,9 +319,7 @@ def main():
         if epoch % 50 == 0 or epoch == 1:
             print(f"[Train][X] Epoch {epoch:4d}/{n_epochs} | NLL ≈ {epoch_nll:0.4f}")
 
-    # --------------------------
     # Train flow on X / G_gauge
-    # --------------------------
     for epoch in trange(1, n_epochs + 1, desc="[Train X/G_gauge]"):
         flow_XG.train()
         epoch_nll = 0.0
@@ -360,9 +342,7 @@ def main():
         if epoch % 50 == 0 or epoch == 1:
             print(f"[Train][X/G_gauge] Epoch {epoch:4d}/{n_epochs} | NLL ≈ {epoch_nll:0.4f}")
 
-    # --------------------------
     # Sample from trained flows and measure observables
-    # --------------------------
     print("[INFO] Finished training. Moving flows to CPU for evaluation...")
     eval_device = torch.device("cpu")
     flow_X.to(eval_device)
@@ -414,9 +394,7 @@ def main():
     print(f"    <E_plaquette> = {E_XG_vals.mean():+0.6f} ± {E_XG_vals.std() / np.sqrt(n_eval):0.6f}")
     print(f"    <|P|>          = {P_XG_vals.mean():+0.6f} ± {P_XG_vals.std() / np.sqrt(n_eval):0.6f}")
 
-    # --------------------------
     # Save results
-    # --------------------------
     out_fname = f"su2_2d_L{L}_beta{beta:.2f}_gaugequotient_flows_results.npz"
     np.savez(
         out_fname,
